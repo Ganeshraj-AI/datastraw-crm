@@ -214,4 +214,10 @@ def debug_version():
     }
 
 
+@app.get("/debug/routes")
+def debug_routes():
+    return [route.path for route in app.routes]
+
+
+
 
