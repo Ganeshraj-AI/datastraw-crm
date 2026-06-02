@@ -209,8 +209,8 @@ def debug_cors():
 @app.get("/debug/version")
 def debug_version():
     return {
-        "version": "105ddce",
-        "cors_debug": True
+        "commit": "FORCE_DEPLOY_TEST",
+        "timestamp": "2026-06-02T19:37:04+05:30"
     }
 
 
