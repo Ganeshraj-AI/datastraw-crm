@@ -3,23 +3,64 @@ import TicketsPage from './TicketsPage'
 import CreateTicketPage from './CreateTicketPage'
 import TicketDetailsPage from './TicketDetailsPage'
 import logo from './assets/logo.png'
+import { supabase } from './supabase'
+import AuthPage from './AuthPage'
 
 function App() {
-  // 1. State for managing our simple client-side navigation
+  // Supabase Authentication states
+  const [session, setSession] = useState(null)
+  const [user, setUser] = useState(null)
+
+  // Navigation states
   const [currentPage, setCurrentPage] = useState('dashboard')
-  
-  // 2. State to track which ticket is selected for view/update details
   const [selectedTicketId, setSelectedTicketId] = useState(null)
 
-  // 3. State to store all tickets for Dashboard stats calculations
+  // Dashboard stats states
   const [tickets, setTickets] = useState([])
   const [isLoadingStats, setIsLoadingStats] = useState(false)
 
-  // 4. Fetch all tickets whenever we load the dashboard to keep statistics real-time
+  // 1. Subscribe to Supabase Authentication sessions & changes
   useEffect(() => {
-    if (currentPage === 'dashboard') {
+    // Check current active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        // Route default landing page based on active role
+        if (session.user.email === 'ganeshraj4020@gmail.com') {
+          setCurrentPage('dashboard')
+        } else {
+          setCurrentPage('customer-create')
+        }
+      }
+    })
+
+    // Listen to live authorization updates (Login/Logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        if (session.user.email === 'ganeshraj4020@gmail.com') {
+          setCurrentPage('dashboard')
+        } else {
+          setCurrentPage('customer-create')
+        }
+      } else {
+        setCurrentPage('dashboard')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // 2. Derive Admin authorization role from email
+  const isAdmin = user && user.email === 'ganeshraj4020@gmail.com'
+
+  // 3. Fetch stats only for Admin on Dashboard views
+  useEffect(() => {
+    if (isAdmin && currentPage === 'dashboard') {
       setIsLoadingStats(true)
-      fetch('http://localhost:8000/api/tickets')
+      fetch('http://127.0.0.1:8000/api/tickets')
         .then((response) => {
           if (!response.ok) {
             throw new Error('Failed to fetch statistics.')
@@ -36,8 +77,9 @@ function App() {
           setIsLoadingStats(false)
         })
     }
-  }, [currentPage])
+  }, [currentPage, isAdmin])
 
+  // Stats helper variables
   const getTicketAge = (createdAtString) => {
     const created = new Date(createdAtString)
     const now = new Date()
@@ -45,7 +87,6 @@ function App() {
     return Math.floor(diffTime / (1000 * 60 * 60 * 24))
   }
 
-  // Stats calculation
   const totalCount = tickets.length
   const openCount = tickets.filter((t) => t.status.toLowerCase() === 'open').length
   const inProgressCount = tickets.filter((t) => t.status.toLowerCase() === 'in progress' || t.status.toLowerCase() === 'pending').length
@@ -53,14 +94,49 @@ function App() {
   const highPriorityCount = tickets.filter((t) => t.priority.toLowerCase() === 'high').length
   const agingCount = tickets.filter((t) => getTicketAge(t.created_at) >= 7).length
 
-  // Callback function when clicking "View Details" inside the TicketsPage list
+  // Callback triggers for router redirection
   const handleViewTicket = (ticketId) => {
     setSelectedTicketId(ticketId)
     setCurrentPage('ticket-details')
   }
 
-  // Helper function to render the correct view based on currentPage state
+  // Handle Supabase sign-out
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      alert(error.message)
+    }
+  }
+
+  // 4. AUTH GUARD: Render Authentication Form if user is logged out
+  if (!user) {
+    return <AuthPage />
+  }
+
+  // Helper function to render the correct view based on currentPage and role
   const renderPage = () => {
+    // CUSTOMER VIEW INTERCEPTOR
+    if (!isAdmin) {
+      return (
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 flex items-center justify-between">
+            <div>
+              <span className="block text-xs font-bold text-blue-600 uppercase tracking-wide">Customer Support Portal</span>
+              <p className="text-sm text-gray-700 mt-1">Logged in as: <strong className="font-semibold">{user.email}</strong></p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-white hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-lg border border-gray-200 transition-colors shadow-sm cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
+          <CreateTicketPage onTicketCreated={() => alert('Support ticket successfully submitted!')} />
+        </div>
+      )
+    }
+
+    // ADMIN VIEWS
     switch (currentPage) {
       case 'dashboard':
         return (
@@ -141,43 +217,63 @@ function App() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 md:h-28">
             {/* Logo Section */}
-            <div className="flex items-center cursor-pointer" onClick={() => setCurrentPage('dashboard')}>
+            <div className="flex items-center cursor-pointer" onClick={() => setCurrentPage(isAdmin ? 'dashboard' : 'customer-create')}>
               <img src={logo} alt="Datastraw Logo" className="h-[60px] md:h-[80px] w-auto object-contain" />
             </div>
 
-            {/* Navigation Tabs */}
-            <nav className="flex space-x-1">
+            {/* Navigation Tabs (Only visible for Admin users) */}
+            {isAdmin && (
+              <nav className="flex items-center space-x-1">
+                <button
+                  onClick={() => setCurrentPage('dashboard')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    currentPage === 'dashboard'
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setCurrentPage('tickets')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    currentPage === 'tickets'
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  Tickets
+                </button>
+                <button
+                  onClick={() => setCurrentPage('create-ticket')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    currentPage === 'create-ticket'
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  Create Ticket
+                </button>
+                
+                {/* Admin Sign Out Link */}
+                <button
+                  onClick={handleLogout}
+                  className="ml-4 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </nav>
+            )}
+            
+            {/* Simple logout button visible for logged-in Customers in the navbar corner */}
+            {!isAdmin && (
               <button
-                onClick={() => setCurrentPage('dashboard')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  currentPage === 'dashboard'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors cursor-pointer"
               >
-                Dashboard
+                Sign Out
               </button>
-              <button
-                onClick={() => setCurrentPage('tickets')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  currentPage === 'tickets'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                Tickets
-              </button>
-              <button
-                onClick={() => setCurrentPage('create-ticket')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  currentPage === 'create-ticket'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                Create Ticket
-              </button>
-            </nav>
+            )}
           </div>
         </div>
       </header>

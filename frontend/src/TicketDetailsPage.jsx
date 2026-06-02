@@ -22,7 +22,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
 
   const fetchTicketDetails = () => {
     setIsLoading(true)
-    fetch(`http://localhost:8000/api/tickets/${ticketId}`)
+    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to retrieve ticket details.')
@@ -43,7 +43,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
 
   const fetchNotes = () => {
     setIsFetchingNotes(true)
-    fetch(`http://localhost:8000/api/tickets/${ticketId}/notes`)
+    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}/notes`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to retrieve ticket notes.')
@@ -67,7 +67,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
     setIsUpdating(true)
     setUpdateSuccess(false)
     
-    fetch(`http://localhost:8000/api/tickets/${ticketId}?status=${encodeURIComponent(newStatus)}`, {
+    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}?status=${encodeURIComponent(newStatus)}`, {
       method: 'PUT'
     })
       .then((response) => {
@@ -101,7 +101,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
     setIsAddingNote(true)
     setNoteSuccess(false)
 
-    fetch(`http://localhost:8000/api/tickets/${ticketId}/notes`, {
+    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}/notes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -134,7 +134,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
       return
     }
 
-    fetch(`http://localhost:8000/api/tickets/${ticketId}`, {
+    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}`, {
       method: 'DELETE'
     })
       .then((response) => {

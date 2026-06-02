@@ -22,7 +22,7 @@ function TicketsPage({ onViewTicket }) {
 
   const fetchTickets = () => {
     setIsLoading(true)
-    fetch('http://localhost:8000/api/tickets')
+    fetch('http://127.0.0.1:8000/api/tickets')
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to retrieve tickets from the backend.')
@@ -47,7 +47,7 @@ function TicketsPage({ onViewTicket }) {
       return
     }
 
-    fetch(`http://localhost:8000/api/tickets/${ticketId}`, {
+    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}`, {
       method: 'DELETE',
     })
       .then((response) => {
