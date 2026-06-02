@@ -206,3 +206,12 @@ def debug_cors():
     }
 
 
+@app.get("/debug/version")
+def debug_version():
+    return {
+        "version": "105ddce",
+        "cors_debug": True
+    }
+
+
+
