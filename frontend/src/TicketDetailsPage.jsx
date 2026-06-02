@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function TicketDetailsPage({ ticketId, onBack }) {
   const [ticket, setTicket] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -22,7 +24,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
 
   const fetchTicketDetails = () => {
     setIsLoading(true)
-    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}`)
+    fetch(`${API_URL}/api/tickets/${ticketId}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to retrieve ticket details.')
@@ -43,7 +45,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
 
   const fetchNotes = () => {
     setIsFetchingNotes(true)
-    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}/notes`)
+    fetch(`${API_URL}/api/tickets/${ticketId}/notes`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to retrieve ticket notes.')
@@ -67,7 +69,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
     setIsUpdating(true)
     setUpdateSuccess(false)
     
-    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}?status=${encodeURIComponent(newStatus)}`, {
+    fetch(`${API_URL}/api/tickets/${ticketId}?status=${encodeURIComponent(newStatus)}`, {
       method: 'PUT'
     })
       .then((response) => {
@@ -101,7 +103,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
     setIsAddingNote(true)
     setNoteSuccess(false)
 
-    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}/notes`, {
+    fetch(`${API_URL}/api/tickets/${ticketId}/notes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -134,7 +136,7 @@ function TicketDetailsPage({ ticketId, onBack }) {
       return
     }
 
-    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}`, {
+    fetch(`${API_URL}/api/tickets/${ticketId}`, {
       method: 'DELETE'
     })
       .then((response) => {

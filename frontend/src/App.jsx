@@ -6,6 +6,8 @@ import logo from './assets/logo.png'
 import { supabase } from './supabase'
 import AuthPage from './AuthPage'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function App() {
   // Supabase Authentication states
   const [session, setSession] = useState(null)
@@ -60,7 +62,7 @@ function App() {
   useEffect(() => {
     if (isAdmin && currentPage === 'dashboard') {
       setIsLoadingStats(true)
-      fetch('http://127.0.0.1:8000/api/tickets')
+      fetch(`${API_URL}/api/tickets`)
         .then((response) => {
           if (!response.ok) {
             throw new Error('Failed to fetch statistics.')

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function TicketsPage({ onViewTicket }) {
   // 1. State to store the tickets fetched from FastAPI
   const [tickets, setTickets] = useState([])
@@ -22,7 +24,7 @@ function TicketsPage({ onViewTicket }) {
 
   const fetchTickets = () => {
     setIsLoading(true)
-    fetch('http://127.0.0.1:8000/api/tickets')
+    fetch(`${API_URL}/api/tickets`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to retrieve tickets from the backend.')
@@ -47,7 +49,7 @@ function TicketsPage({ onViewTicket }) {
       return
     }
 
-    fetch(`http://127.0.0.1:8000/api/tickets/${ticketId}`, {
+    fetch(`${API_URL}/api/tickets/${ticketId}`, {
       method: 'DELETE',
     })
       .then((response) => {

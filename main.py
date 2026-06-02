@@ -11,10 +11,10 @@ import crud
 
 app = FastAPI()
 
-# Configure CORS Middleware with robust regex to allow any local port for localhost and 127.0.0.1
+# Configure CORS Middleware to allow both local development and production Vercel origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex="https?://(localhost|127\\.0\\.0\\.1)(:\\d+)?",
+    allow_origin_regex="https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

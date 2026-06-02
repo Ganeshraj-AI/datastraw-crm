@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+const API_URL = import.meta.env.VITE_API_URL
+
 function CreateTicketPage({ onTicketCreated }) {
   // Form input states
   const [customerName, setCustomerName] = useState('')
@@ -25,7 +27,7 @@ function CreateTicketPage({ onTicketCreated }) {
       description: description
     }
 
-    fetch('http://127.0.0.1:8000/api/tickets', {
+    fetch(`${API_URL}/api/tickets`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
