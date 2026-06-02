@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Tickets</title>
+</head>
+<body>
+
+    <h1>All Tickets</h1>
+
+    <table border="1" cellpadding="10">
+
+        <tr>
+            <th>Ticket ID</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Status</th>
+        </tr>
+
+        {% for ticket in tickets %}
+
+        <tr>
+            <td>{{ ticket.ticket_id }}</td>
+            <td>{{ ticket.customer_name }}</td>
+            <td>{{ ticket.customer_email }}</td>
+            <td>{{ ticket.subject }}</td>
+            <td>{{ ticket.status }}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <a href="/">
+        Create New Ticket
+    </a>
+
+</body>
+</html>

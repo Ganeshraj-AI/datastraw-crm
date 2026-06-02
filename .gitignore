@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+crm.db
+.env
+
+frontend/node_modules
+frontend/dist
