@@ -11,6 +11,15 @@ import crud
 
 app = FastAPI()
 
+@app.middleware("http")
+async def log_request(request, call_next):
+    print("ORIGIN:", request.headers.get("origin"))
+    print("METHOD:", request.method)
+    print("ACCESS_CONTROL_REQUEST_METHOD:", request.headers.get("access-control-request-method"))
+    print("ACCESS_CONTROL_REQUEST_HEADERS:", request.headers.get("access-control-request-headers"))
+    response = await call_next(request)
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -180,4 +189,20 @@ def get_ticket_notes(
         raise HTTPException(status_code=404, detail="Ticket not found")
     
     return crud.get_notes_by_ticket_id(db, ticket_id)
+
+
+@app.get("/debug/cors")
+def debug_cors():
+    allow_origins = []
+    allow_origin_regex = None
+    for m in app.user_middleware:
+        if getattr(m, "cls", None).__name__ == "CORSMiddleware":
+            allow_origins = m.options.get("allow_origins", [])
+            allow_origin_regex = m.options.get("allow_origin_regex")
+            break
+    return {
+        "allow_origins": allow_origins,
+        "allow_origin_regex": allow_origin_regex
+    }
+
 
