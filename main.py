@@ -11,10 +11,12 @@ import crud
 
 app = FastAPI()
 
-# Configure CORS Middleware to allow both local development and production Vercel origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex="https?://.*",
+    allow_origins=[
+        "http://localhost:5173",
+        "https://datastraw-crm-seven.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
