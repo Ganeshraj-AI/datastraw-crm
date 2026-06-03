@@ -37,7 +37,9 @@ uvicorn main:app --reload
 ## Live Demo
 
 Deployed URL:
-<your railway url>
+[<your railway url>
+](https://datastraw-crm-seven.vercel.app/)
 
 Demo Video:
-<youtube link>
+[<youtube link>
+](https://youtu.be/EzDE7ulqW6Q)
