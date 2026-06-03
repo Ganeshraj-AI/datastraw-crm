@@ -8,6 +8,11 @@ import AuthPage from './AuthPage'
 
 const API_URL = import.meta.env.VITE_API_URL
 
+const ADMIN_EMAILS = [
+  'ganeshraj4020@gmail.com',
+  'hr@datastraw.com'
+]
+
 function App() {
   // Supabase Authentication states
   const [session, setSession] = useState(null)
@@ -29,7 +34,7 @@ function App() {
       setUser(session?.user ?? null)
       if (session?.user) {
         // Route default landing page based on active role
-        if (session.user.email === 'ganeshraj4020@gmail.com') {
+        if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
           setCurrentPage('dashboard')
         } else {
           setCurrentPage('customer-create')
@@ -42,7 +47,7 @@ function App() {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        if (session.user.email === 'ganeshraj4020@gmail.com') {
+        if (session.user.email && ADMIN_EMAILS.includes(session.user.email)) {
           setCurrentPage('dashboard')
         } else {
           setCurrentPage('customer-create')
@@ -56,7 +61,7 @@ function App() {
   }, [])
 
   // 2. Derive Admin authorization role from email
-  const isAdmin = user && user.email === 'ganeshraj4020@gmail.com'
+  const isAdmin = user && ADMIN_EMAILS.includes(user.email)
 
   // 3. Fetch stats only for Admin on Dashboard views
   useEffect(() => {
